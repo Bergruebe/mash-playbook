@@ -715,6 +715,15 @@ mash_playbook_devture_systemd_service_manager_services_list_auto_itemized:
     {{ ({'name': (syncstorage_rs_docker_identifier + '.service'), 'priority': 2000, 'groups': ['mash', 'syncstorage-rs-docker']} if syncstorage_rs_docker_enabled else omit) }}
   # /role-specific:syncstorage_rs_docker
 
+  # role-specific:ssm
+  - |-
+    {{ ({'name': (ssm_identifier + '-server.service'), 'priority': 2000, 'groups': ['mash', 'ssm']} if ssm_enabled else omit) }}
+  - |-
+    {{ ({'name': (ssm_identifier + '-client.service'), 'priority': 2200, 'groups': ['mash', 'ssm']} if ssm_enabled else omit) }}
+  - |-
+    {{ ({'name': (ssm_identifier + '-proxy.service'), 'priority': 2500, 'groups': ['mash', 'ssm']} if ssm_enabled else omit) }}
+  # /role-specific:ssm
+
   # role-specific:syncthing
   - |-
     {{ ({'name': (syncthing_identifier + '.service'), 'priority': 2000, 'groups': ['mash', 'syncthing']} if syncthing_enabled else omit) }}
@@ -5750,7 +5759,7 @@ mongodb_gid: "{{ mash_playbook_gid }}"
 
 mongodb_base_path: "{{ mash_playbook_base_path }}/{{ mash_playbook_service_base_directory_name_prefix }}mongodb"
 
-mash_playbook_mongodb_managed_databases_auto_itemized:
+ mash_playbook_mongodb_managed_databases_auto_itemized:
   # Dummy entry, which is not role-specific.
   # Ensures there's at least one entry defined in the list.
   - "{{ omit }}"
@@ -5765,6 +5774,17 @@ mash_playbook_mongodb_managed_databases_auto_itemized:
       } if infisical_enabled and infisical_mongodb_hostname == mongodb_identifier else omit)
     }}
   # /role-specific:infisical
+
+  # role-specific:ssm
+  - |-
+    {{
+      ({
+        'name': ssm_mongo_db_name,
+        'username': ssm_mongo_user,
+        'password': ssm_mongo_pwd,
+      } if ssm_enabled and ssm_mongo_host == mongodb_identifier else omit)
+    }}
+  # /role-specific:ssm
 
 mongodb_managed_databases_auto: "{{ mash_playbook_mongodb_managed_databases_auto_itemized | reject('equalto', omit) }}"
 
@@ -7801,6 +7821,66 @@ syncthing_container_labels_traefik_tls_certResolver: "{{ traefik_certResolver_pr
 #                                                                      #
 ########################################################################
 # /role-specific:syncthing
+
+
+
+# role-specific:ssm
+########################################################################
+#                                                                                                                                                             #
+# Squirrel Servers Manager (SSM)                                                                                                      #
+#                                                                                                                                                             #
+########################################################################
+
+ssm_enabled: false
+ssm_identifier: "{{ mash_playbook_service_identifier_prefix }}ssm"
+ssm_uid: "{{ mash_playbook_uid }}"
+ssm_gid: "{{ mash_playbook_gid }}"
+
+ssm_base_path: "{{ mash_playbook_base_path }}/{{ mash_playbook_service_base_directory_name_prefix }}ssm"
+
+ssm_env_secret: "{{ '%s' | format(mash_playbook_generic_secret_key) | password_hash('sha512', 'secret.ssm', rounds=655555) | to_uuid }}"
+ssm_env_salt: "{{ '%s' |  format('ssm-salt' + mash_playbook_generic_secret_key) | hash('sha256') | regex_replace('[^a-zA-Z0-9]', '') | truncate(16, True) }}"
+ssm_env_vault_pwd:  "{{ '%s' | format(mash_playbook_generic_secret_key) | password_hash('sha512', 'secret.ssm.vault', rounds=655555) | to_uuid }}"
+
+ssm_proxy_container_additional_networks_auto: |
+  {{
+    ([mash_playbook_reverse_proxyable_services_additional_network] if mash_playbook_reverse_proxyable_services_additional_network and ssm_container_labels_traefik_enabled else [])
+  }}
+
+
+# role-specific:traefik
+ssm_container_labels_traefik_enabled: "{{ mash_playbook_traefik_labels_enabled }}"
+ssm_container_labels_traefik_entrypoints: "{{ traefik_entrypoint_primary }}"
+ssm_container_labels_traefik_tls_certResolver: "{{ traefik_certResolver_primary }}"
+ssm_proxy_container_labels_traefik_docker_network: "{{ mash_playbook_reverse_proxyable_services_additional_network }}"
+# /role-specific:traefik
+
+# role-specific:mongo
+ssm_server_systemd_required_services_list_auto: |
+  {{
+    ([mongodb_identifier ~ '.service'] if mongodb_enabled and ssm_mongo_host == mongodb_identifier else [])
+  }}
+ssm_server_container_additional_networks_auto: |
+  {{
+    ([mongodb_container_network] if mongodb_enabled and ssm_mongo_host == mongodb_identifier and ssm_container_network != mongodb_container_network else [])
+  }}
+ssm_mongo_host: "{{ mongodb_identifier if mongodb_enabled else '' }}"
+ssm_mongo_db_name: "{{ ssm_identifier if ssm_mongo_host == mongodb_identifier else '' }}"
+ssm_mongo_port: "{{ '27017' if mongodb_enabled else '' }}"
+ssm_mongo_user: "{{ ssm_identifier if ssm_mongo_host == mongodb_identifier else '' }}"
+ssm_mongo_pwd: "{{ '%s' | format(mash_playbook_generic_secret_key) | password_hash('sha512', 'db.ssm', rounds=655555) | to_uuid }}"
+#/role-specific:mongo
+
+# role-specific:valkey
+ssm_redis_host: "{{ valkey_identifier if valkey_enabled else '' }}"
+ssm_redis_port: "{{ '6379' if valkey_enabled else '' }}"
+#/role-specific:valkey
+
+# role-specific:prometheus
+#ssm_prometheus_host: "{{ ('http://' + prometheus_identifier + ':' + (prometheus_container_http_port | default(9090)) ) if prometheus_enabled else '' }}"
+#ssm_prometheus_username: "{{ ssm_identifier if prometheus_enabled else '' }}"
+#ssm_prometheus_password: "{{ '%s' | format(mash_playbook_generic_secret_key) | password_hash('sha512', 'prometheus.ssm', rounds=655555) | to_uuid }}"
+#/role-specific:prometheus
 
 
 

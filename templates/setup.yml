@@ -545,6 +545,10 @@
     - role: galaxy/syncstorage_rs_docker
     # /role-specific:syncstorage_rs_docker
 
+    # role-specific:ssm
+    - role: galaxy/ssm
+    # /role-specific:ssm
+
     # role-specific:syncthing
     - role: galaxy/syncthing
     # /role-specific:syncthing
