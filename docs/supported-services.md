@@ -57,6 +57,7 @@ Below is an exhaustive list of the free and open-source software for self-hostin
 | [Calibre-Web Automated](https://github.com/crocodilestick/Calibre-Web-Automated) | Web application based on [Calibre-Web](https://github.com/janeczku/calibre-web) with additional features and automation | [Link](services/calibre-web-automated.md) |
 | [Cap Standalone](https://capjs.js.org/guide/standalone/) | Backend of Cap, a POW Captcha | [Link](services/cap.md) |
 | [Changedetection.io](https://github.com/dgtlmoon/changedetection.io) | Website change detection and restock monitoring service | [Link](services/changedetection.md) |
+| [Checkmk](https://checkmk.com/) | Monitoring system for IT infrastructure, applications and cloud resources | [Link](services/checkmk.md) |
 | [ChiefOnboarding](https://docs.chiefonboarding.com) | Employee onboarding platform | [Link](services/chiefonboarding.md) |
 | [Cinny](https://github.com/ajbura/cinny) | Web client for [Matrix](https://matrix.org/) | [Link](services/cinny.md) |
 | [CiviCRM](https://civicrm.org/) | Relationship management system for advocacy, non-profit and non-governmental groups | [Link](services/civicrm.md) |

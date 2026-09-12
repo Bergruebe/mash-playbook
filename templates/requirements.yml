@@ -124,6 +124,10 @@
   version: v0.55.8-0
   name: changedetection
   activation_prefix: changedetection_
+- src: git+https://github.com/Bergruebe/ansible-role-checkmk.git
+  version: v2.5.0p11-0
+  name: checkmk
+  activation_prefix: checkmk_
 - src: git+https://iris.radicle.network/z3HYheWh86U9ErEL18tK2gBkq7g2A.git
   version: v2.4.0-4
   name: chiefonboarding

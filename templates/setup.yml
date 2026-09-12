@@ -214,6 +214,10 @@
     - role: galaxy/changedetection
     # /role-specific:changedetection
 
+    # role-specific:checkmk
+    - role: galaxy/checkmk
+    # /role-specific:checkmk
+
     # role-specific:chiefonboarding
     - role: galaxy/chiefonboarding
     # /role-specific:chiefonboarding

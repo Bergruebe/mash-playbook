@@ -256,6 +256,11 @@ mash_playbook_devture_systemd_service_manager_services_list_auto_itemized:
     {{ ({'name': (changedetection_playwright_driver_identifier + '.service'), 'priority': 2000, 'restart_necessary': (changedetection_restart_necessary | bool), 'groups': ['mash', 'changedetection']} if changedetection_playwright_driver_enabled else omit) }}
   # /role-specific:changedetection
 
+  # role-specific:checkmk
+  - |-
+    {{ ({'name': (checkmk_identifier + '.service'), 'priority': 2000, 'restart_necessary': (checkmk_restart_necessary | bool), 'groups': ['mash', 'checkmk']} if checkmk_enabled else omit) }}
+  # /role-specific:checkmk
+
   # role-specific:chiefonboarding
   - |-
     {{ ({'name': (chiefonboarding_identifier + '.service'), 'priority': 2000, 'restart_necessary': (chiefonboarding_restart_necessary | bool), 'groups': ['mash', 'chiefonboarding']} if chiefonboarding_enabled else omit) }}
@@ -4413,6 +4418,58 @@ changedetection_container_labels_traefik_tls_certResolver: "{{ traefik_certResol
 #                                                                      #
 ########################################################################
 # /role-specific:changedetection
+
+
+
+# role-specific:checkmk
+########################################################################
+#                                                                      #
+# Checkmk                                                              #
+#                                                                      #
+########################################################################
+
+checkmk_enabled: false
+
+checkmk_identifier: "{{ mash_playbook_service_identifier_prefix }}checkmk"
+
+checkmk_base_path: "{{ mash_playbook_base_path }}/{{ mash_playbook_service_base_directory_name_prefix }}checkmk"
+
+checkmk_uid: "{{ mash_playbook_uid }}"
+checkmk_gid: "{{ mash_playbook_gid }}"
+
+checkmk_systemd_wanted_services_list_auto: |
+  {{
+    ([exim_relay_identifier ~ '.service'] if exim_relay_enabled | default(false) else [])
+  }}
+
+checkmk_container_additional_networks_auto: |
+  {{
+    ([exim_relay_container_network] if exim_relay_enabled | default(false) and checkmk_container_network != exim_relay_container_network else [])
+    +
+    ([mash_playbook_reverse_proxyable_services_additional_network] if mash_playbook_reverse_proxyable_services_additional_network else [])
+  }}
+
+checkmk_container_labels_traefik_enabled: "{{ mash_playbook_traefik_labels_enabled }}"
+checkmk_container_labels_traefik_docker_network: "{{ mash_playbook_reverse_proxyable_services_additional_network }}"
+
+# role-specific:traefik
+checkmk_container_labels_traefik_entrypoints: "{{ traefik_entrypoint_primary }}"
+checkmk_container_labels_traefik_tls_certResolver: "{{ traefik_certResolver_primary }}"
+# /role-specific:traefik
+
+# role-specific:exim_relay
+# Checkmk passes this value to Postfix's `relayhost` setting verbatim. The bracket
+# notation is what lets a port be given at all, and it additionally skips the MX
+# lookup - which is what we want for a container hostname.
+checkmk_mail_relay_host: "{{ ('[' ~ exim_relay_identifier ~ ']:8025') if exim_relay_enabled | default(false) else '' }}"
+# /role-specific:exim_relay
+
+########################################################################
+#                                                                      #
+# /Checkmk                                                             #
+#                                                                      #
+########################################################################
+# /role-specific:checkmk
 
 
 
